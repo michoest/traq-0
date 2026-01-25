@@ -1,0 +1,63 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+#app {
+  height: 100%;
+}
+
+.v-application {
+  height: 100%;
+}
+
+/* Hide scrollbars but keep scrolling */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Connection status line */
+.connection-status {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 9999;
+  transition: background-color 0.3s;
+}
+
+.connection-status.online {
+  background-color: #4CAF50;
+}
+
+.connection-status.offline {
+  background-color: #FF5252;
+}
+
+/* Task card transitions */
+.task-list-move,
+.task-list-enter-active,
+.task-list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.task-list-enter-from,
+.task-list-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+.task-list-leave-active {
+  position: absolute;
+}

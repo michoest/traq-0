@@ -1,0 +1,16 @@
+{
+  "name": "traq-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:app\"",
+    "dev:api": "cd api && npm run dev",
+    "dev:app": "cd app && npm run dev",
+    "build": "cd app && npm run build",
+    "deploy": "cd app && npm run deploy",
+    "install:all": "cd api && npm install && cd ../app && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
