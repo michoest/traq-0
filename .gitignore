@@ -4,9 +4,10 @@ node_modules/
 # Build output
 dist/
 
-# Environment files with secrets
-.env.local
-.env.*.local
+# Environment files
+.env
+.env.*
+!.env.example
 
 # IDE
 .vscode/
