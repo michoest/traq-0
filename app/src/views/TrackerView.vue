@@ -16,6 +16,7 @@ const authStore = useAuthStore()
 const selectedTags = ref([])
 const showCommentDialog = ref(false)
 const lastStoppedEntry = ref(null)
+const lastStartedTaskId = ref(null)
 const showStopOthersSnackbar = ref(false)
 const otherActiveCount = ref(0)
 const commentSnackbar = ref(false)
@@ -60,6 +61,7 @@ function toggleTag(tagId) {
 async function handleStart(taskId) {
   try {
     const response = await entriesStore.startTask(taskId)
+    lastStartedTaskId.value = taskId
 
     // Show "stop other tasks" snackbar if enabled and there are other active tasks
     if (allowMultipleTasks.value && response.otherActiveEntries?.length > 0) {
@@ -88,12 +90,12 @@ async function handleStop(taskId, entryId) {
   }
 }
 
-async function handleStopAll() {
+async function handleStopOthers() {
   try {
-    await entriesStore.stopAllTasks()
+    await entriesStore.stopOtherTasks(lastStartedTaskId.value)
     showStopOthersSnackbar.value = false
   } catch (e) {
-    console.error('Failed to stop all tasks:', e)
+    console.error('Failed to stop other tasks:', e)
   }
 }
 
@@ -127,7 +129,7 @@ onMounted(async () => {
       style="overflow-x: auto;"
     >
       <v-chip
-        :variant="selectedTags.length === 0 ? 'elevated' : 'outlined'"
+        :variant="selectedTags.length === 0 ? 'elevated' : 'tonal'"
         color="primary"
         @click="selectedTags = []"
       >
@@ -207,9 +209,9 @@ onMounted(async () => {
       <template #actions>
         <v-btn
           variant="text"
-          @click="handleStopAll"
+          @click="handleStopOthers"
         >
-          Stop all
+          Stop others
         </v-btn>
         <v-btn
           icon="mdi-close"

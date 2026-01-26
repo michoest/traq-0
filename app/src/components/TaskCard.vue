@@ -94,7 +94,7 @@ function handleClick() {
 <template>
   <v-card
     :color="isRunning ? 'primary' : undefined"
-    :variant="isRunning ? 'elevated' : 'outlined'"
+    :variant="isRunning ? 'elevated' : 'tonal'"
     class="task-card"
     @click="handleClick"
   >

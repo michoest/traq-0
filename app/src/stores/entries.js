@@ -124,6 +124,40 @@ export const useEntriesStore = defineStore('entries', () => {
     }
   }
 
+  async function stopOtherTasks(exceptTaskId) {
+    const syncStore = useSyncStore()
+    const entriesToStop = activeEntries.value.filter(e => e.taskId !== exceptTaskId)
+
+    if (entriesToStop.length === 0) return { stoppedCount: 0 }
+
+    if (!syncStore.isOnline) {
+      const now = new Date().toISOString()
+      entriesToStop.forEach(entry => {
+        entry.endTime = now
+        entries.value.unshift(entry)
+      })
+      await offlineService.addToQueue({
+        action: 'stopOthers',
+        payload: { exceptTaskId }
+      })
+      activeEntries.value = activeEntries.value.filter(e => e.taskId === exceptTaskId)
+      return { stoppedCount: entriesToStop.length }
+    }
+
+    try {
+      // Stop each entry individually except the current one
+      for (const entry of entriesToStop) {
+        const response = await api.stopTask(entry.taskId, entry.id)
+        activeEntries.value = activeEntries.value.filter(e => e.id !== response.entry.id)
+        entries.value.unshift(response.entry)
+      }
+      return { stoppedCount: entriesToStop.length }
+    } catch (e) {
+      error.value = e.message
+      throw e
+    }
+  }
+
   async function createEntry(entry) {
     try {
       const response = await api.createEntry(entry)
@@ -184,6 +218,7 @@ export const useEntriesStore = defineStore('entries', () => {
     startTask,
     stopTask,
     stopAllTasks,
+    stopOtherTasks,
     createEntry,
     updateEntry,
     deleteEntry,

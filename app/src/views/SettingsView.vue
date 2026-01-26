@@ -24,6 +24,10 @@ const showAdvanced = ref(false)
 const editingTask = ref(null)
 const editingTag = ref(null)
 
+// Custom icon input
+const showCustomTaskIcon = ref(false)
+const showCustomTagIcon = ref(false)
+
 // Form data
 const taskForm = ref({
   name: '',
@@ -73,11 +77,11 @@ const commonIcons = [
   'mdi-lightbulb'
 ]
 
-// Common colors
+// Common colors (brand colors from traq.svg first)
 const commonColors = [
-  '#6B7CFF', '#2EF2C8', '#FF5252', '#FFC107',
-  '#4CAF50', '#2196F3', '#9C27B0', '#FF9800',
-  '#795548', '#607D8B', '#E91E63', '#00BCD4'
+  '#6B7CFF', '#6A5CFF', '#2EF2C8', '#C9FFFA',
+  '#FF5252', '#E91E63', '#9C27B0', '#2196F3',
+  '#00BCD4', '#4CAF50', '#FFC107', '#FF9800'
 ]
 
 const allowMultipleTasks = computed({
@@ -102,6 +106,7 @@ const buildDate = computed(() => {
 
 // Task functions
 function openTaskDialog(task = null) {
+  showCustomTaskIcon.value = false
   if (task) {
     editingTask.value = task
     taskForm.value = {
@@ -111,6 +116,10 @@ function openTaskDialog(task = null) {
       icon: task.icon || 'mdi-checkbox-blank-circle',
       tags: task.tags || [],
       active: task.active
+    }
+    // Check if icon is custom (not in commonIcons)
+    if (!commonIcons.includes(task.icon)) {
+      showCustomTaskIcon.value = true
     }
   } else {
     editingTask.value = null
@@ -153,12 +162,17 @@ async function deleteTask(task) {
 
 // Tag functions
 function openTagDialog(tag = null) {
+  showCustomTagIcon.value = false
   if (tag) {
     editingTag.value = tag
     tagForm.value = {
       name: tag.name,
       color: tag.color,
       icon: tag.icon
+    }
+    // Check if icon is custom (not in commonIcons)
+    if (!commonIcons.includes(tag.icon)) {
+      showCustomTagIcon.value = true
     }
   } else {
     editingTag.value = null
@@ -338,13 +352,13 @@ onMounted(async () => {
         </v-btn>
       </v-card-title>
 
-      <draggable
-        v-if="tagsStore.tags.length > 0"
-        v-model="orderedTags"
-        item-key="id"
-        handle=".drag-handle"
-        tag="div"
-      >
+      <v-list v-if="tagsStore.tags.length > 0">
+        <draggable
+          v-model="orderedTags"
+          item-key="id"
+          handle=".drag-handle"
+          tag="div"
+        >
         <template #item="{ element: tag }">
           <v-list-item>
             <template #prepend>
@@ -371,9 +385,10 @@ onMounted(async () => {
             </template>
           </v-list-item>
         </template>
-      </draggable>
+        </draggable>
+      </v-list>
 
-      <v-card-text v-else class="text-center text-medium-emphasis">
+      <v-card-text v-if="tagsStore.tags.length === 0" class="text-center text-medium-emphasis">
         No tags yet. Tags help organize your tasks.
       </v-card-text>
     </v-card>
@@ -403,61 +418,52 @@ onMounted(async () => {
       </v-list>
     </v-card>
 
-    <!-- API Tokens -->
-    <v-card class="mb-4">
-      <v-card-title class="d-flex align-center">
-        <v-icon start>mdi-key</v-icon>
-        API Tokens
-        <v-spacer />
-        <v-btn
-          size="small"
-          color="primary"
-          variant="tonal"
-          @click="showTokenDialog = true"
-        >
-          <v-icon start>mdi-plus</v-icon>
-          Generate
-        </v-btn>
-      </v-card-title>
-
-      <v-card-subtitle>
-        Use tokens for iOS Shortcuts integration
-      </v-card-subtitle>
-
-      <v-list v-if="apiTokens.length > 0">
-        <v-list-item v-for="token in apiTokens" :key="token.id">
-          <v-list-item-title>{{ token.name }}</v-list-item-title>
-          <v-list-item-subtitle>
-            Created: {{ new Date(token.createdAt).toLocaleDateString() }}
-            <span v-if="token.lastUsedAt">
-              | Last used: {{ new Date(token.lastUsedAt).toLocaleDateString() }}
-            </span>
-          </v-list-item-subtitle>
-          <template #append>
-            <v-btn
-              icon="mdi-delete"
-              size="x-small"
-              variant="text"
-              color="error"
-              @click="revokeToken(token)"
-            />
-          </template>
-        </v-list-item>
-      </v-list>
-
-      <v-card-text v-else class="text-center text-medium-emphasis">
-        No API tokens yet
-      </v-card-text>
-    </v-card>
-
     <!-- Advanced Settings -->
     <v-expansion-panels v-model="showAdvanced">
       <v-expansion-panel>
-        <v-expansion-panel-title>
+        <v-expansion-panel-title class="text-h6">
           <v-icon start>mdi-cog</v-icon>
           Advanced
         </v-expansion-panel-title>
         <v-expansion-panel-text>
+          <!-- API Tokens Section -->
+          <div class="mb-6">
+            <div class="d-flex align-center mb-3">
+              <v-icon start size="20">mdi-key</v-icon>
+              <span class="text-subtitle-2">API Tokens</span>
+              <v-spacer />
+              <v-btn
+                size="x-small"
+                color="primary"
+                variant="tonal"
+                @click="showTokenDialog = true"
+              >
+                <v-icon start size="16">mdi-plus</v-icon>
+                Generate
+              </v-btn>
+            </div>
+            <div class="text-caption text-medium-emphasis mb-2">
+              Use tokens for iOS Shortcuts integration
+            </div>
+
+            <div v-if="apiTokens.length > 0" class="d-flex flex-wrap ga-2">
+              <v-chip
+                v-for="token in apiTokens"
+                :key="token.id"
+                variant="tonal"
+                closable
+                @click:close="revokeToken(token)"
+              >
+                {{ token.name }}
+              </v-chip>
+            </div>
+            <div v-else class="text-caption text-medium-emphasis">
+              No API tokens yet
+            </div>
+          </div>
+
+          <v-divider class="mb-4" />
+
           <v-list density="compact">
             <v-list-item>
               <v-list-item-title>Build Date</v-list-item-title>
@@ -507,7 +513,7 @@ onMounted(async () => {
                 Clear
               </v-btn>
             </div>
-            <v-card variant="outlined" class="pa-2" style="max-height: 200px; overflow-y: auto;">
+            <v-card variant="tonal" class="pa-2" style="max-height: 200px; overflow-y: auto;">
               <div
                 v-for="(log, i) in syncStore.debugLogs"
                 :key="i"
@@ -558,14 +564,35 @@ onMounted(async () => {
           </div>
 
           <div class="mb-4">
-            <div class="text-subtitle-2 mb-2">Icon</div>
-            <div class="d-flex flex-wrap ga-2">
+            <div class="d-flex align-center mb-2">
+              <span class="text-subtitle-2">Icon</span>
+              <v-spacer />
+              <v-btn
+                size="x-small"
+                variant="text"
+                @click="showCustomTaskIcon = !showCustomTaskIcon"
+              >
+                {{ showCustomTaskIcon ? 'Use presets' : 'Custom icon' }}
+              </v-btn>
+            </div>
+
+            <v-text-field
+              v-if="showCustomTaskIcon"
+              v-model="taskForm.icon"
+              label="MDI Icon Name"
+              placeholder="mdi-account"
+              hint="Enter any MDI icon name (e.g., mdi-account, mdi-airplane)"
+              persistent-hint
+              :prepend-inner-icon="taskForm.icon"
+            />
+
+            <div v-else class="d-flex flex-wrap ga-2">
               <v-btn
                 v-for="icon in commonIcons"
                 :key="icon"
                 size="small"
                 :icon="icon"
-                :variant="taskForm.icon === icon ? 'elevated' : 'outlined'"
+                :variant="taskForm.icon === icon ? 'elevated' : 'tonal'"
                 :color="taskForm.icon === icon ? 'primary' : undefined"
                 @click="taskForm.icon = icon"
               />
@@ -633,14 +660,35 @@ onMounted(async () => {
           </div>
 
           <div class="mb-4">
-            <div class="text-subtitle-2 mb-2">Icon</div>
-            <div class="d-flex flex-wrap ga-2">
+            <div class="d-flex align-center mb-2">
+              <span class="text-subtitle-2">Icon</span>
+              <v-spacer />
+              <v-btn
+                size="x-small"
+                variant="text"
+                @click="showCustomTagIcon = !showCustomTagIcon"
+              >
+                {{ showCustomTagIcon ? 'Use presets' : 'Custom icon' }}
+              </v-btn>
+            </div>
+
+            <v-text-field
+              v-if="showCustomTagIcon"
+              v-model="tagForm.icon"
+              label="MDI Icon Name"
+              placeholder="mdi-tag"
+              hint="Enter any MDI icon name (e.g., mdi-tag, mdi-folder)"
+              persistent-hint
+              :prepend-inner-icon="tagForm.icon"
+            />
+
+            <div v-else class="d-flex flex-wrap ga-2">
               <v-btn
                 v-for="icon in commonIcons"
                 :key="icon"
                 size="small"
                 :icon="icon"
-                :variant="tagForm.icon === icon ? 'elevated' : 'outlined'"
+                :variant="tagForm.icon === icon ? 'elevated' : 'tonal'"
                 :color="tagForm.icon === icon ? 'primary' : undefined"
                 @click="tagForm.icon = icon"
               />

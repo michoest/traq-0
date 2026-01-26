@@ -43,12 +43,19 @@ export default createVuetify({
       rounded: 'lg'
     },
     VTextField: {
-      variant: 'outlined',
-      density: 'comfortable'
+      variant: 'solo-filled',
+      density: 'comfortable',
+      flat: true
     },
     VSelect: {
-      variant: 'outlined',
-      density: 'comfortable'
+      variant: 'solo-filled',
+      density: 'comfortable',
+      flat: true
+    },
+    VTextarea: {
+      variant: 'solo-filled',
+      density: 'comfortable',
+      flat: true
     }
   }
 })

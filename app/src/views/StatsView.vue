@@ -268,9 +268,7 @@ async function saveEditedEntry() {
 }
 
 async function deleteEntry(entry) {
-  if (confirm('Delete this entry?')) {
-    await entriesStore.deleteEntry(entry.id)
-  }
+  await entriesStore.deleteEntry(entry.id)
 }
 
 async function createManualEntry() {
@@ -330,25 +328,26 @@ onMounted(async () => {
 </script>
 
 <template>
-  <v-container class="pa-4">
+  <v-container class="pa-4 pb-16">
     <!-- Time Range Selector -->
-    <v-btn-toggle
-      v-model="timeRange"
-      mandatory
-      color="primary"
-      variant="outlined"
-      divided
-      class="mb-4"
-    >
+    <div class="d-flex justify-center mb-4">
+      <v-btn-toggle
+        v-model="timeRange"
+        mandatory
+        color="primary"
+        rounded="lg"
+      >
       <v-btn
         v-for="range in timeRanges"
         :key="range.value"
         :value="range.value"
         size="small"
+        rounded="0"
       >
         {{ range.title }}
       </v-btn>
-    </v-btn-toggle>
+      </v-btn-toggle>
+    </div>
 
     <!-- Tag Filter -->
     <div
@@ -356,7 +355,7 @@ onMounted(async () => {
       class="d-flex flex-wrap ga-2 mb-4"
     >
       <v-chip
-        :variant="selectedTags.length === 0 ? 'elevated' : 'outlined'"
+        :variant="selectedTags.length === 0 ? 'elevated' : 'tonal'"
         color="primary"
         size="small"
         @click="selectedTags = []"

@@ -46,32 +46,7 @@ router.post('/', requireAuth, async (req, res) => {
   }
 })
 
-// Update tag
-router.put('/:id', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params
-    const { name, color, icon } = req.body
-
-    const tag = db.data.tags.find(t => t.id === id && t.userId === req.user.id)
-
-    if (!tag) {
-      return res.status(404).json({ error: 'Tag not found' })
-    }
-
-    if (name !== undefined) tag.name = name
-    if (color !== undefined) tag.color = color
-    if (icon !== undefined) tag.icon = icon
-
-    await db.write()
-
-    res.json({ tag })
-  } catch (error) {
-    console.error('Update tag error:', error)
-    res.status(500).json({ error: 'Failed to update tag' })
-  }
-})
-
-// Reorder tags
+// Reorder tags - MUST be before /:id to avoid matching "reorder" as an ID
 router.put('/reorder', requireAuth, async (req, res) => {
   try {
     const { tagIds } = req.body
@@ -97,6 +72,31 @@ router.put('/reorder', requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Reorder tags error:', error)
     res.status(500).json({ error: 'Failed to reorder tags' })
+  }
+})
+
+// Update tag
+router.put('/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params
+    const { name, color, icon } = req.body
+
+    const tag = db.data.tags.find(t => t.id === id && t.userId === req.user.id)
+
+    if (!tag) {
+      return res.status(404).json({ error: 'Tag not found' })
+    }
+
+    if (name !== undefined) tag.name = name
+    if (color !== undefined) tag.color = color
+    if (icon !== undefined) tag.icon = icon
+
+    await db.write()
+
+    res.json({ tag })
+  } catch (error) {
+    console.error('Update tag error:', error)
+    res.status(500).json({ error: 'Failed to update tag' })
   }
 })
 
