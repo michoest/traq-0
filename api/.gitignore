@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Environment files with secrets
+.env.local
+.env.*.local
+
+# Database
+data/db.json
+
+# Logs
+*.log
+
+# OS
+.DS_Store
