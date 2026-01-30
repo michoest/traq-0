@@ -8,6 +8,7 @@ import tasksRoutes from './routes/tasks.js'
 import tagsRoutes from './routes/tags.js'
 import entriesRoutes from './routes/entries.js'
 import shortcutsRoutes from './routes/shortcuts.js'
+import dispatchRoutes from './routes/dispatch.js'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -26,6 +27,7 @@ app.use('/tasks', tasksRoutes)
 app.use('/tags', tagsRoutes)
 app.use('/entries', entriesRoutes)
 app.use('/shortcuts', shortcutsRoutes)
+app.use('/dispatch', dispatchRoutes)
 
 // Health check
 app.get('/health', (req, res) => {

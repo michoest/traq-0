@@ -36,7 +36,7 @@ onMounted(() => {
     </div>
   </Transition>
 
-  <v-app v-show="!showSplash">
+  <v-app v-show="!showSplash" class="safe-area">
     <ConnectionStatus />
 
     <v-main class="pb-16 app-background">
@@ -47,7 +47,6 @@ onMounted(() => {
       v-if="showNavigation"
       grow
       color="primary"
-      class="safe-area-bottom"
     >
       <v-btn
         v-for="item in navItems"
@@ -61,6 +60,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.safe-area {
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+
 .v-main {
   height: 100%;
   overflow-y: auto;
@@ -107,9 +110,5 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 </style>
