@@ -28,16 +28,35 @@ async function findTaskByName(tasks, input) {
     return { taskId: null, confidence: 'none' }
   }
 
+  // Get all tags for the dispatch user to resolve tag IDs to names
+  const userTags = db.data.tags.filter(t => t.userId === DISPATCH_USER_ID)
+  const tagMap = Object.fromEntries(userTags.map(t => [t.id, t.name]))
+
+  // Format tasks with description and tags for better matching
+  const formattedTasks = tasks.map(t => {
+    let taskInfo = `- ${t.id}: ${t.name}`
+    if (t.description) {
+      taskInfo += ` (${t.description})`
+    }
+    if (t.tags && t.tags.length > 0) {
+      const tagNames = t.tags.map(tagId => tagMap[tagId]).filter(Boolean)
+      if (tagNames.length > 0) {
+        taskInfo += ` [tags: ${tagNames.join(', ')}]`
+      }
+    }
+    return taskInfo
+  }).join('\n')
+
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',
-        content: `You are a task matcher. Match the user's input to the most appropriate task from the list. Return JSON only: {"taskId": "the-matching-id" or null if no match, "confidence": "high"|"medium"|"low"|"none"}`
+        content: `You are a task matcher. Match the user's input to the most appropriate task from the list. Consider task names, descriptions, and tags when matching. Return JSON only: {"taskId": "the-matching-id" or null if no match, "confidence": "high"|"medium"|"low"|"none"}`
       },
       {
         role: 'user',
-        content: `Input: "${input}"\n\nAvailable tasks:\n${tasks.map(t => `- ${t.id}: ${t.name}`).join('\n')}`
+        content: `Input: "${input}"\n\nAvailable tasks:\n${formattedTasks}`
       }
     ],
     response_format: { type: 'json_object' },
